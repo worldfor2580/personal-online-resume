@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>内容管理后台</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-tertiary: #f1f3f4;
+            --bg-card: #ffffff;
+            --text-primary: #202124;
+            --text-secondary: #5f6368;
+            --text-tertiary: #80868b;
+            --accent-blue: #4285f4;
+            --accent-purple: #a142f4;
+            --accent-pink: #f451ab;
+            --accent-orange: #f6982a;
+            --accent-green: #34a853;
+            --border-color: #e0e0e0;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.07);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 24px;
+            --radius-xl: 32px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme="light"]) {
+                --bg-primary: #1a1a1a;
+                --bg-secondary: #121212;
+                --bg-tertiary: #2a2a2a;
+                --bg-card: #1e1e1e;
+                --text-primary: #e8eaed;
+                --text-secondary: #9aa0a6;
+                --text-tertiary: #5f6368;
+                --border-color: #3c4043;
+                --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+                --shadow-md: 0 4px 6px rgba(0,0,0,0.4);
+                --shadow-lg: 0 10px 25px rgba(0,0,0,0.5);
+            }
+        }
+
+        :root[data-theme="dark"] {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #121212;
+            --bg-tertiary: #2a2a2a;
+            --bg-card: #1e1e1e;
+            --text-primary: #e8eaed;
+            --text-secondary: #9aa0a6;
+            --text-tertiary: #5f6368;
+            --border-color: #3c4043;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.4);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .sidebar, .main-content, .modal-overlay, #auth-screen {
+            position: relative;
+            z-index: 1;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: var(--bg-primary);
+            border-right: 1px solid var(--border-color);
+            padding: 1.5rem 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 0 1.5rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 1rem;
+        }
+
+        .sidebar-logo {
+            font-family: 'Google Sans', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .sidebar-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-tertiary);
+            margin-top: 0.25rem;
+        }
+
+        .view-site-link {
+            display: block;
+            margin: 0.5rem 1.5rem;
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, rgba(66, 133, 244, 0.1), rgba(161, 66, 244, 0.1));
+            border-radius: var(--radius-md);
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .view-site-link:hover {
+            background: linear-gradient(135deg, rgba(66, 133, 244, 0.2), rgba(161, 66, 244, 0.2));
+            transform: translateY(-1px);
+        }
+
+        .logout-btn {
+            display: block;
+            margin: 1rem 1.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(234, 67, 53, 0.1);
+            border-radius: var(--radius-md);
+            color: #ea4335;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            width: calc(100% - 3rem);
+        }
+
+        .logout-btn:hover {
+            background: rgba(234, 67, 53, 0.2);
+        }
+
+        .theme-toggle-admin {
+            display: block;
+            margin: 0.5rem 1.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            width: calc(100% - 3rem);
+        }
+
+        .theme-toggle-admin:hover {
+            background: var(--border-color);
+        }
+
+        .sidebar-toggle {
+            display: none;
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 1001;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 0.5rem;
+            cursor: pointer;
+            box-shadow: var(--shadow-md);
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                z-index: 1000;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .sidebar-overlay.active {
+                display: block;
+            }
+            .sidebar-toggle {
+                display: block;
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+        }
+
+        .nav-section { margin-bottom: 1rem; }
+
+        .nav-section-title {
+            padding: 0.5rem 1.5rem;
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(90deg, rgba(66, 133, 244, 0.1), transparent);
+            color: var(--accent-blue);
+            border-left-color: var(--accent-blue);
+        }
+
+        .nav-icon { font-size: 1.2rem; }
+
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 2rem 3rem;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-family: 'Google Sans', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .header-actions { display: flex; gap: 0.75rem; }
+
+        .btn {
+            font-family: 'Inter', sans-serif;
+            padding: 0.65rem 1.25rem;
+            border: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary { background: var(--accent-blue); color: white; }
+        .btn-primary:hover { background: #3367d6; transform: translateY(-1px); box-shadow: var(--shadow-md); }
+
+        .btn-secondary { background: var(--bg-tertiary); color: var(--text-primary); }
+        .btn-secondary:hover { background: var(--border-color); }
+
+        .btn-success { background: var(--accent-green); color: white; }
+        .btn-success:hover { background: #2d8e47; transform: translateY(-1px); }
+
+        .btn-danger { background: #ea4335; color: white; }
+        .btn-danger:hover { background: #d33426; }
+
+        .btn-small { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
+
+        .panel { display: none; }
+        .panel.active { display: block; }
+
+        .form-section {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .form-section-title {
+            font-family: 'Google Sans', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--accent-purple);
+            margin-bottom: 1.25rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--bg-tertiary);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .form-group { margin-bottom: 1rem; }
+        .form-group.full-width { grid-column: 1 / -1; }
+
+        .form-label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 0.4rem;
+        }
+
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 0.65rem 0.9rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.15);
+        }
+
+        .form-textarea { min-height: 80px; resize: vertical; }
+
+        .tag-input-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            padding: 0.5rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            min-height: 42px;
+        }
+
+        .tag-input-container:focus-within {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.15);
+        }
+
+        .tag {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.25rem 0.6rem;
+            background: linear-gradient(135deg, rgba(66, 133, 244, 0.1), rgba(161, 66, 244, 0.1));
+            border-radius: var(--radius-lg);
+            font-size: 0.85rem;
+            color: var(--accent-blue);
+        }
+
+        .tag-remove { cursor: pointer; opacity: 0.6; }
+        .tag-remove:hover { opacity: 1; }
+
+        .tag-input {
+            flex: 1;
+            min-width: 100px;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+        .tag-input:focus { outline: none; }
+
+        .data-list { display: flex; flex-direction: column; gap: 1rem; }
+
+        .data-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            transition: all 0.2s ease;
+        }
+
+        .data-item:hover {
+            border-color: var(--accent-blue);
+            box-shadow: var(--shadow-md);
+        }
+
+        .data-item-content { flex: 1; }
+        .data-item-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.3rem;
+        }
+
+        .data-item-desc {
+            color: var(--text-tertiary);
+            font-size: 0.9rem;
+        }
+
+        .data-item-meta { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.5rem; }
+
+        .meta-tag {
+            padding: 0.15rem 0.5rem;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-lg);
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .meta-date { color: var(--accent-pink); font-size: 0.85rem; }
+        .data-item-actions { display: flex; gap: 0.5rem; margin-left: 1rem; }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 3rem;
+            overflow-y: auto;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .modal {
+            background: var(--bg-card);
+            border-radius: var(--radius-xl);
+            width: 90%;
+            max-width: 650px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-family: 'Google Sans', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .modal-close {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: var(--bg-tertiary);
+            border: none;
+            font-size: 1.3rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover { background: var(--text-primary); color: white; }
+
+        .modal-body { padding: 1.5rem 2rem; max-height: 60vh; overflow-y: auto; }
+        .modal-footer { padding: 1rem 2rem; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 0.75rem; }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 0.9rem 1.5rem;
+            background: var(--text-primary);
+            color: white;
+            border-radius: var(--radius-lg);
+            font-weight: 500;
+            z-index: 2000;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+
+        .toast.show { opacity: 1; transform: translateY(0); }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-tertiary);
+        }
+
+        .empty-state-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
+
+        .timeline-list { display: flex; flex-direction: column; gap: 1rem; }
+
+        .timeline-item-form {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+        }
+
+        .timeline-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .timeline-item-number { color: var(--accent-blue); font-size: 0.9rem; font-weight: 600; }
+
+        @media (max-width: 900px) {
+            .sidebar { width: 200px; }
+            .main-content { margin-left: 200px; padding: 1.5rem; }
+        }
+
+        body.unauthenticated .sidebar,
+        body.unauthenticated .main-content {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+    <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="切换侧边栏">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+    </button>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">Portfolio Admin</div>
+            <div class="sidebar-subtitle">内容管理系统</div>
+        </div>
+
+        <nav class="nav-section">
+            <div class="nav-section-title">基本信息</div>
+            <div class="nav-item active" data-panel="profile">
+                <span class="nav-icon">👤</span><span>个人信息</span>
+            </div>
+        </nav>
+
+        <nav class="nav-section">
+            <div class="nav-section-title">内容管理</div>
+            <div class="nav-item" data-panel="games">
+                <span class="nav-icon">🎮</span><span>游戏作品</span>
+            </div>
+        </nav>
+
+        <nav class="nav-section">
+            <div class="nav-section-title">简历管理</div>
+            <div class="nav-item" data-panel="resume">
+                <span class="nav-icon">📄</span><span>我的简历</span>
+            </div>
+        </nav>
+
+        <nav class="nav-section">
+            <div class="nav-section-title">数据管理</div>
+            <div class="nav-item" data-panel="data-management">
+                <span class="nav-icon">💾</span><span>导入/导出</span>
+            </div>
+        </nav>
+
+        <a href="/" class="view-site-link">查看我的主页</a>
+        <button class="theme-toggle-admin" id="theme-toggle-btn" onclick="toggleTheme()">切换深色模式</button>
+        <button class="logout-btn" onclick="logout()">退出登录</button>
+    </aside>
+
+    <main class="main-content">
+        <!-- 个人信息 -->
+        <div class="panel active" id="panel-profile">
+            <div class="page-header">
+                <h1 class="page-title">个人信息</h1>
+            </div>
+
+            <div class="form-section">
+                <div class="form-section-title">基本资料</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">昵称</label>
+                        <input type="text" class="form-input" id="profile-name" placeholder="输入昵称">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">头像 Emoji</label>
+                        <input type="text" class="form-input" id="profile-avatar" placeholder="例如: 👨‍💻">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">标题</label>
+                        <input type="text" class="form-input" id="profile-title" placeholder="例如: 游戏开发者">
+                    </div>
+                    <div class="form-group full-width">
+                        <label class="form-label">副标题</label>
+                        <input type="text" class="form-input" id="profile-subtitle" placeholder="个人主页副标题">
+                    </div>
+                    <div class="form-group full-width">
+                        <label class="form-label">个人简介（每段一行）</label>
+                        <textarea class="form-textarea" id="profile-about" rows="4" placeholder="输入个人简介"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="form-section-title">技能标签</div>
+                <div id="skills-container"></div>
+            </div>
+
+            <div class="form-section">
+                <div class="page-header" style="margin-bottom: 1rem;">
+                    <h2 class="page-title" style="font-size: 1.1rem;">社交链接</h2>
+                    <button class="btn btn-secondary btn-small" onclick="addSocialLink()">+ 添加</button>
+                </div>
+                <div id="social-links-container"></div>
+            </div>
+
+            <button class="btn btn-success" onclick="saveProfile()">保存更改</button>
+        </div>
+
+        <!-- 游戏作品 -->
+        <div class="panel" id="panel-games">
+            <div class="page-header">
+                <h1 class="page-title">游戏作品</h1>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="openGameModal()">+ 添加作品</button>
+                </div>
+            </div>
+            <div class="data-list" id="games-list"></div>
+        </div>
+
+        <!-- 简历 -->
+        <div class="panel" id="panel-resume">
+            <div class="page-header">
+                <h1 class="page-title">简历管理</h1>
+            </div>
+
+            <div class="form-section">
+                <div class="form-section-title">联系方式</div>
+                <div class="form-grid">
+                    <div class="form-group"><label class="form-label">邮箱</label><input type="text" class="form-input" id="resume-email"></div>
+                    <div class="form-group"><label class="form-label">电话</label><input type="text" class="form-input" id="resume-phone"></div>
+                    <div class="form-group"><label class="form-label">所在地</label><input type="text" class="form-input" id="resume-location"></div>
+                    <div class="form-group"><label class="form-label">GitHub</label><input type="text" class="form-input" id="resume-github"></div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="form-section-title">求职意向</div>
+                <div class="form-grid">
+                    <div class="form-group"><label class="form-label">期望职位</label><input type="text" class="form-input" id="resume-target-position"></div>
+                    <div class="form-group"><label class="form-label">期望城市</label><input type="text" class="form-input" id="resume-target-city"></div>
+                    <div class="form-group"><label class="form-label">期望薪资</label><input type="text" class="form-input" id="resume-target-salary"></div>
+                    <div class="form-group"><label class="form-label">工作性质</label><input type="text" class="form-input" id="resume-target-type" placeholder="如：全职、实习"></div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="page-header" style="margin-bottom: 1rem;">
+                    <h2 class="page-title" style="font-size: 1.1rem;">教育背景</h2>
+                    <button class="btn btn-secondary btn-small" onclick="addEducation()">+ 添加</button>
+                </div>
+                <div id="education-list" class="timeline-list"></div>
+            </div>
+
+            <div class="form-section">
+                <div class="page-header" style="margin-bottom: 1rem;">
+                    <h2 class="page-title" style="font-size: 1.1rem;">项目经历</h2>
+                    <button class="btn btn-secondary btn-small" onclick="addProject()">+ 添加</button>
+                </div>
+                <div id="projects-list" class="timeline-list"></div>
+            </div>
+
+            <button class="btn btn-success" onclick="saveResume()">保存更改</button>
+        </div>
+
+        <!-- 数据管理 -->
+        <div class="panel" id="panel-data-management">
+            <div class="page-header">
+                <h1 class="page-title">数据管理</h1>
+            </div>
+
+            <div class="form-section">
+                <div class="form-section-title">导出数据</div>
+                <p style="color: var(--text-secondary); margin-bottom: 1rem; font-size: 0.9rem;">将所有数据导出为 JSON 文件，便于备份和迁移。</p>
+                <button class="btn btn-primary" onclick="exportData()">📥 导出 JSON</button>
+            </div>
+
+            <div class="form-section">
+                <div class="form-section-title">导入数据</div>
+                <p style="color: var(--text-secondary); margin-bottom: 1rem; font-size: 0.9rem;">从 JSON 文件导入数据，将覆盖当前所有内容。</p>
+                <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importData(event)">
+                <button class="btn btn-secondary" onclick="document.getElementById('import-file').click()">📤 选择文件导入</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- 游戏编辑弹窗 -->
+    <div class="modal-overlay" id="game-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title" id="game-modal-title">添加游戏作品</h2>
+                <button class="modal-close" onclick="closeGameModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="game-id">
+                <div class="form-group"><label class="form-label">作品名称</label><input type="text" class="form-input" id="game-title" placeholder="例如：星际探险家"></div>
+                <div class="form-group"><label class="form-label">图标 Emoji</label><input type="text" class="form-input" id="game-icon" placeholder="例如: 🎮"></div>
+                <div class="form-group full-width"><label class="form-label">封面图片URL</label><input type="text" class="form-input" id="game-image" placeholder="输入图片链接"></div>
+                <div class="form-group full-width"><label class="form-label">游戏简介</label><textarea class="form-textarea" id="game-desc" rows="3" placeholder="详细介绍游戏"></textarea></div>
+                <div class="form-group full-width"><label class="form-label">技术标签（回车添加）</label><div class="tag-input-container" id="game-tech-container"><input type="text" class="tag-input" id="game-tech-input" placeholder="输入标签后按回车"></div></div>
+                <div class="form-group full-width"><label class="form-label">游戏链接（可选）</label><input type="text" class="form-input" id="game-link" placeholder="例如：Steam链接"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeGameModal()">取消</button>
+                <button class="btn btn-success" onclick="saveGame()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <!-- 访问保护 -->
+    <div id="auth-screen" style="position: fixed; inset: 0; background: var(--bg-secondary); z-index: 3000; display: flex; align-items: center; justify-content: center;">
+        <div style="background: var(--bg-card); padding: 3rem; border-radius: var(--radius-xl); box-shadow: var(--shadow-lg); text-align: center; max-width: 400px; width: 90%;">
+            <div style="font-size: 3rem; margin-bottom: 1.5rem;">🔐</div>
+            <h2 style="font-family: 'Google Sans', sans-serif; font-size: 1.5rem; margin-bottom: 0.5rem; color: var(--text-primary);">内容管理后台</h2>
+            <p style="color: var(--text-tertiary); margin-bottom: 2rem; font-size: 0.9rem;">请输入访问密码 (默认 admin123)</p>
+            <input type="password" id="auth-password" class="form-input" placeholder="输入密码" style="margin-bottom: 1rem; text-align: center;" onkeydown="if(event.key==='Enter')checkAuth()">
+            <button class="btn btn-primary" style="width: 100%;" onclick="checkAuth()">进入</button>
+            <p id="auth-error" style="color: #ea4335; margin-top: 1rem; font-size: 0.9rem; display: none;">密码错误</p>
+        </div>
+    </div>
+
+    <script>
+        let data = {};
+
+        const ADMIN_PASSWORD = 'admin123';
+
+        function checkAuth() {
+            const input = document.getElementById('auth-password').value;
+            const errorEl = document.getElementById('auth-error');
+            if (input === ADMIN_PASSWORD) {
+                localStorage.setItem('portfolio_admin_auth', '1');
+                document.getElementById('auth-screen').style.display = 'none';
+                document.body.classList.remove('unauthenticated');
+            } else {
+                errorEl.style.display = 'block';
+                document.getElementById('auth-password').value = '';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (localStorage.getItem('portfolio_admin_auth') === '1') {
+                document.getElementById('auth-screen').style.display = 'none';
+                document.body.classList.remove('unauthenticated');
+            } else {
+                document.body.classList.add('unauthenticated');
+            }
+
+            await loadData();
+            initNavigation();
+            renderAll();
+        });
+
+        async function loadData() {
+            const cached = localStorage.getItem('portfolio_data');
+            if (cached) {
+                try { data = JSON.parse(cached); return; } catch (e) {}
+            }
+            try {
+                const resp = await fetch('/data.json');
+                if (resp.ok) data = await resp.json();
+            } catch (e) {}
+            
+            if (!data.profile) data.profile = { name: '', title: '', subtitle: '', avatar: '', about: [], socialLinks: [], skills: {} };
+            if (!data.games) data.games = [];
+            if (!data.resume) data.resume = { contact: {}, target: {}, education: [], projects: [] };
+        }
+
+        function initNavigation() {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const panelId = item.dataset.panel;
+                    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                    item.classList.add('active');
+                    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+                    document.getElementById('panel-' + panelId).classList.add('active');
+                    if (window.innerWidth <= 768) toggleSidebar();
+                });
+            });
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+        }
+
+        function renderAll() {
+            renderProfile();
+            renderGames();
+            renderResume();
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem('portfolio_data', JSON.stringify(data));
+        }
+
+        function renderProfile() {
+            const p = data.profile || {};
+            document.getElementById('profile-name').value = p.name || '';
+            document.getElementById('profile-avatar').value = p.avatar || '';
+            document.getElementById('profile-title').value = p.title || '';
+            document.getElementById('profile-subtitle').value = p.subtitle || '';
+            document.getElementById('profile-about').value = (p.about || []).join('\n');
+            renderSkills();
+            renderSocialLinks();
+        }
+
+        function renderSkills() {
+            const container = document.getElementById('skills-container');
+            const skills = data.profile.skills || {};
+            container.innerHTML = Object.entries(skills).map(([cat, items]) => `
+                <div class="form-group" style="margin-bottom: 0.75rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <label class="form-label" style="margin-bottom: 0.25rem;">${cat}</label>
+                        <button class="btn btn-danger btn-small" onclick="removeSkillCategory('${encodeURIComponent(cat)}')" style="padding: 0.15rem 0.5rem; font-size: 0.75rem;">删除分类</button>
+                    </div>
+                    <div class="tag-input-container">
+                        ${(items || []).map(item => `<span class="tag" data-cat="${encodeURIComponent(cat)}" data-item="${encodeURIComponent(item)}">${item}<span class="tag-remove" onclick="removeSkill(this)"> ×</span></span>`).join('')}
+                        <input type="text" class="tag-input" placeholder="输入后回车" data-cat="${encodeURIComponent(cat)}" onkeydown="addSkill(event, this)">
+                    </div>
+                </div>
+            `).join('') + `
+                <div class="form-group" style="display: flex; gap: 0.5rem;">
+                    <input type="text" class="form-input" id="new-skill-category" placeholder="新分类名称" style="flex: 1;">
+                    <button class="btn btn-secondary btn-small" onclick="addSkillCategory()">添加分类</button>
+                </div>
+            `;
+        }
+
+        function addSkillCategory() {
+            const cat = document.getElementById('new-skill-category').value.trim();
+            if (!data.profile.skills) data.profile.skills = {};
+            if (cat && !data.profile.skills[cat]) {
+                data.profile.skills[cat] = [];
+                renderSkills();
+            }
+        }
+
+        function addSkill(e, inputEl) {
+            if (e.key === 'Enter') {
+                const cat = decodeURIComponent(inputEl.dataset.cat);
+                const val = inputEl.value.trim();
+                if (!data.profile.skills) data.profile.skills = {};
+                if (!data.profile.skills[cat]) data.profile.skills[cat] = [];
+                if (val && !data.profile.skills[cat].includes(val)) {
+                    data.profile.skills[cat].push(val);
+                    renderSkills();
+                }
+            }
+        }
+
+        function removeSkill(removeEl) {
+            const tagEl = removeEl.closest('.tag');
+            const cat = decodeURIComponent(tagEl.dataset.cat);
+            const item = decodeURIComponent(tagEl.dataset.item);
+            if (data.profile.skills && data.profile.skills[cat]) {
+                data.profile.skills[cat] = data.profile.skills[cat].filter(s => s !== item);
+                renderSkills();
+            }
+        }
+
+        function removeSkillCategory(encodedCat) {
+            const cat = decodeURIComponent(encodedCat);
+            if (confirm(`确定删除分类"${cat}"吗？`)) {
+                if (data.profile.skills) {
+                    delete data.profile.skills[cat];
+                    renderSkills();
+                }
+            }
+        }
+
+        function renderSocialLinks() {
+            const container = document.getElementById('social-links-container');
+            container.innerHTML = (data.profile.socialLinks || []).map((link, i) => `
+                <div class="form-group" style="display: flex; gap: 0.5rem; align-items: center;">
+                    <input type="text" class="form-input" value="${link.name}" placeholder="名称" style="flex: 1;" onchange="updateSocialLink(${i}, 'name', this.value)">
+                    <input type="text" class="form-input" value="${link.url}" placeholder="链接" style="flex: 2;" onchange="updateSocialLink(${i}, 'url', this.value)">
+                    <button class="btn btn-danger btn-small" onclick="removeSocialLink(${i})">删除</button>
+                </div>
+            `).join('');
+        }
+
+        function addSocialLink() { 
+            if (!data.profile.socialLinks) data.profile.socialLinks = []; 
+            data.profile.socialLinks.push({ name: '', url: '' }); 
+            renderSocialLinks(); 
+        }
+        function updateSocialLink(i, field, val) { data.profile.socialLinks[i][field] = val; }
+        function removeSocialLink(i) { data.profile.socialLinks.splice(i, 1); renderSocialLinks(); }
+
+        function saveProfile() {
+            if (!data.profile) data.profile = {};
+            data.profile.name = document.getElementById('profile-name').value;
+            data.profile.avatar = document.getElementById('profile-avatar').value;
+            data.profile.title = document.getElementById('profile-title').value;
+            data.profile.subtitle = document.getElementById('profile-subtitle').value;
+            data.profile.about = document.getElementById('profile-about').value.split('\n').filter(l => l.trim());
+            saveToLocalStorage();
+            showToast('已保存');
+        }
+
+        function renderGames() {
+            const container = document.getElementById('games-list');
+            const games = data.games || [];
+            if (!games.length) { container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🎮</div>暂无游戏作品</div>'; return; }
+            container.innerHTML = games.map((g, i) => `
+                <div class="data-item">
+                    <div class="data-item-content">
+                        <div class="data-item-title">${g.icon || '🎮'} ${g.title}</div>
+                        <div class="data-item-desc">${g.description || ''}</div>
+                        <div class="data-item-meta">${(g.tech || []).map(t => `<span class="meta-tag">${t}</span>`).join('')}</div>
+                    </div>
+                    <div class="data-item-actions">
+                        <button class="btn btn-secondary btn-small" onclick="editGame(${i})">编辑</button>
+                        <button class="btn btn-danger btn-small" onclick="deleteGame(${i})">删除</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openGameModal(index = null) {
+            document.getElementById('game-modal').classList.add('active');
+            if (index !== null) {
+                const g = data.games[index];
+                document.getElementById('game-modal-title').textContent = '编辑游戏作品';
+                document.getElementById('game-id').value = index;
+                document.getElementById('game-title').value = g.title || '';
+                document.getElementById('game-icon').value = g.icon || '';
+                document.getElementById('game-image').value = g.image || '';
+                document.getElementById('game-desc').value = g.description || '';
+                document.getElementById('game-link').value = g.link || '';
+                renderTechTags(g.tech || []);
+            } else {
+                document.getElementById('game-modal-title').textContent = '添加游戏作品';
+                document.getElementById('game-id').value = '';
+                document.getElementById('game-title').value = '';
+                document.getElementById('game-icon').value = '🎮';
+                document.getElementById('game-image').value = '';
+                document.getElementById('game-desc').value = '';
+                document.getElementById('game-link').value = '';
+                renderTechTags([]);
+            }
+        }
+
+        function closeGameModal() { document.getElementById('game-modal').classList.remove('active'); }
+
+        function saveGame() {
+            const id = document.getElementById('game-id').value;
+            const gameData = {
+                id: id ? parseInt(id) : Date.now(),
+                title: document.getElementById('game-title').value,
+                icon: document.getElementById('game-icon').value,
+                image: document.getElementById('game-image').value,
+                description: document.getElementById('game-desc').value,
+                tech: getCurrentTechTags(),
+                link: document.getElementById('game-link').value
+            };
+            if (!data.games) data.games = [];
+            if (id) data.games[parseInt(id)] = gameData;
+            else data.games.push(gameData);
+            closeGameModal();
+            renderGames();
+            saveToLocalStorage();
+            showToast('已保存');
+        }
+
+        function editGame(i) { openGameModal(i); }
+        function deleteGame(i) { if (confirm('确定删除？')) { data.games.splice(i, 1); renderGames(); saveToLocalStorage(); showToast('已删除'); } }
+
+        function renderResume() {
+            const r = data.resume || {};
+            document.getElementById('resume-email').value = r.contact?.email || '';
+            document.getElementById('resume-phone').value = r.contact?.phone || '';
+            document.getElementById('resume-location').value = r.contact?.location || '';
+            document.getElementById('resume-github').value = r.contact?.github || '';
+            
+            document.getElementById('resume-target-position').value = r.target?.position || '';
+            document.getElementById('resume-target-city').value = r.target?.city || '';
+            document.getElementById('resume-target-salary').value = r.target?.salary || '';
+            document.getElementById('resume-target-type').value = r.target?.type || '';
+            
+            renderEducation(r.education || []);
+            renderProjects(r.projects || []);
+        }
+
+        function renderEducation(list) {
+            const c = document.getElementById('education-list');
+            c.innerHTML = !list.length ? '<p style="color: var(--text-tertiary)">暂无教育背景</p>' : list.map((e, i) => `
+                <div class="timeline-item-form">
+                    <div class="timeline-item-header"><span class="timeline-item-number">#${i+1}</span><button class="btn btn-danger btn-small" onclick="deleteEducation(${i})">删除</button></div>
+                    <div class="form-group"><label class="form-label">学校</label><input type="text" class="form-input" value="${e.school||''}" onchange="updateEducation(${i}, 'school', this.value)"></div>
+                    <div class="form-group"><label class="form-label">学位</label><input type="text" class="form-input" value="${e.degree||''}" onchange="updateEducation(${i}, 'degree', this.value)"></div>
+                    <div class="form-group"><label class="form-label">主修专业</label><input type="text" class="form-input" value="${e.major||''}" onchange="updateEducation(${i}, 'major', this.value)"></div>
+                    <div class="form-group"><label class="form-label">时间</label><input type="text" class="form-input" value="${e.year||''}" onchange="updateEducation(${i}, 'year', this.value)"></div>
+                    <div class="form-group full-width"><label class="form-label">相关课程</label><textarea class="form-textarea" rows="2" onchange="updateEducation(${i}, 'courses', this.value)">${e.courses||''}</textarea></div>
+                </div>
+            `).join('');
+        }
+
+        function addEducation() { 
+            if (!data.resume) data.resume = {};
+            if (!data.resume.education) data.resume.education = []; 
+            data.resume.education.push({ school: '', degree: '', major: '', year: '', courses: '' }); 
+            renderEducation(data.resume.education); 
+        }
+        function updateEducation(i, f, v) { data.resume.education[i][f] = v; }
+        function deleteEducation(i) { data.resume.education.splice(i, 1); renderEducation(data.resume.education); }
+
+        function renderProjects(list) {
+            const c = document.getElementById('projects-list');
+            c.innerHTML = !list.length ? '<p style="color: var(--text-tertiary)">暂无项目经历</p>' : list.map((p, i) => `
+                <div class="timeline-item-form">
+                    <div class="timeline-item-header"><span class="timeline-item-number">#${i+1}</span><button class="btn btn-danger btn-small" onclick="deleteProject(${i})">删除</button></div>
+                    <div class="form-group"><label class="form-label">项目名称</label><input type="text" class="form-input" value="${p.name||''}" onchange="updateProject(${i}, 'name', this.value)"></div>
+                    <div class="form-group"><label class="form-label">项目角色</label><input type="text" class="form-input" value="${p.role||''}" onchange="updateProject(${i}, 'role', this.value)"></div>
+                    <div class="form-group"><label class="form-label">项目时间</label><input type="text" class="form-input" value="${p.time||''}" onchange="updateProject(${i}, 'time', this.value)"></div>
+                    <div class="form-group full-width"><label class="form-label">详细内容</label><textarea class="form-textarea" rows="3" onchange="updateProject(${i}, 'description', this.value)">${p.description||''}</textarea></div>
+                </div>
+            `).join('');
+        }
+
+        function addProject() { 
+            if (!data.resume) data.resume = {};
+            if (!data.resume.projects) data.resume.projects = []; 
+            data.resume.projects.push({ name: '', role: '', time: '', description: '' }); 
+            renderProjects(data.resume.projects); 
+        }
+        function updateProject(i, f, v) { data.resume.projects[i][f] = v; }
+        function deleteProject(i) { data.resume.projects.splice(i, 1); renderProjects(data.resume.projects); }
+
+        function saveResume() {
+            if (!data.resume) data.resume = {};
+            data.resume.contact = {
+                email: document.getElementById('resume-email').value,
+                phone: document.getElementById('resume-phone').value,
+                location: document.getElementById('resume-location').value,
+                github: document.getElementById('resume-github').value
+            };
+            data.resume.target = {
+                position: document.getElementById('resume-target-position').value,
+                city: document.getElementById('resume-target-city').value,
+                salary: document.getElementById('resume-target-salary').value,
+                type: document.getElementById('resume-target-type').value
+            };
+            saveToLocalStorage();
+            showToast('已保存');
+        }
+
+        function renderTechTags(tags) {
+            const container = document.getElementById('game-tech-container');
+            const input = document.getElementById('game-tech-input');
+            container.innerHTML = tags.map(t => `<span class="tag">${t}<span class="tag-remove" onclick="removeTechTag('${t}')"> ×</span></span>`).join('');
+            container.appendChild(input);
+        }
+
+        function getCurrentTechTags() {
+            const tags = [];
+            document.querySelectorAll('#game-tech-container .tag').forEach(t => tags.push(t.textContent.replace(' ×', '').trim()));
+            return tags;
+        }
+
+        function removeTechTag(tag) {
+            const tags = getCurrentTechTags().filter(t => t !== tag);
+            renderTechTags(tags);
+        }
+
+        document.getElementById('game-tech-input')?.addEventListener('keydown', e => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const val = e.target.value.trim();
+                if (val && !getCurrentTechTags().includes(val)) { renderTechTags([...getCurrentTechTags(), val]); }
+                e.target.value = '';
+            }
+        });
+
+        function exportData() {
+            const json = JSON.stringify(data, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `portfolio_data_${new Date().toISOString().slice(0,10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('数据已导出');
+        }
+
+        function importData(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = ev => {
+                try {
+                    const imported = JSON.parse(ev.target.result);
+                    if (imported.profile) {
+                        if (confirm('导入数据将覆盖当前所有内容。确定继续吗？')) {
+                            data = imported;
+                            saveToLocalStorage();
+                            renderAll();
+                            showToast('数据导入成功');
+                        }
+                    } else {
+                        showToast('无效的数据格式');
+                    }
+                } catch (err) {
+                    showToast('文件解析失败');
+                }
+            };
+            reader.readAsText(file);
+            e.target.value = '';
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
+            }
+        });
+
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) overlay.classList.remove('active');
+            });
+        });
+
+        function logout() {
+            localStorage.removeItem('portfolio_admin_auth');
+            location.reload();
+        }
+
+        function toggleTheme() {
+            const root = document.documentElement;
+            const currentTheme = root.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            root.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeButton(newTheme);
+        }
+
+        function updateThemeButton(theme) {
+            const btn = document.getElementById('theme-toggle-btn');
+            if (btn) {
+                btn.textContent = theme === 'dark' ? '切换浅色模式' : '切换深色模式';
+            }
+        }
+
+        (function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                updateThemeButton(savedTheme);
+            } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                updateThemeButton('dark');
+            }
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>李昶佑 - 游戏客户端实习生</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-card: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-tertiary: #94a3b8;
+            --accent-primary: #6366f1;
+            --accent-hover: #4f46e5;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-full: 9999px;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #0f1115;
+            --bg-secondary: #16181d;
+            --bg-card: #1e2028;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-tertiary: #64748b;
+            --accent-primary: #818cf8;
+            --accent-hover: #6366f1;
+            --border-color: #2a2d36;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            transition: background-color 0.3s, color 0.3s;
+            overflow-x: hidden;
+        }
+
+        /* Background Pattern */
+        .bg-pattern {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: radial-gradient(var(--border-color) 1px, transparent 1px);
+            background-size: 32px 32px;
+            opacity: 0.5;
+            z-index: -2;
+            pointer-events: none;
+        }
+        .bg-glow {
+            position: fixed;
+            top: -200px; left: 50%;
+            transform: translateX(-50%);
+            width: 1000px; height: 600px;
+            background: radial-gradient(ellipse at center, rgba(99, 102, 241, 0.15) 0%, transparent 60%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        h1, h2, h3, h4 { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        /* Navbar */
+        nav {
+            position: fixed; top: 0; left: 0; right: 0;
+            padding: 1rem 2rem;
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(var(--bg-primary-rgb), 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 100;
+        }
+        .logo { font-weight: 700; font-size: 1.25rem; text-decoration: none; color: var(--text-primary); }
+        .nav-links { display: flex; gap: 1.5rem; list-style: none; }
+        .nav-links a { text-decoration: none; color: var(--text-secondary); font-weight: 500; transition: color 0.2s; }
+        .nav-links a:hover { color: var(--accent-primary); }
+        .theme-toggle { background: none; border: none; color: var(--text-secondary); cursor: pointer; padding: 0.5rem; }
+        .theme-toggle:hover { color: var(--accent-primary); }
+
+        /* Container */
+        .container { max-width: 1000px; margin: 0 auto; padding: 0 2rem; }
+
+        /* Hero */
+        .hero { min-height: 80vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding-top: 4rem; }
+        .hero h1 { font-size: clamp(2.5rem, 5vw, 4.5rem); font-weight: 800; line-height: 1.1; margin-bottom: 1.5rem; letter-spacing: -0.03em; }
+        .hero h1 span { color: var(--accent-primary); }
+        .hero p { font-size: 1.125rem; color: var(--text-secondary); max-width: 600px; margin-bottom: 2.5rem; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.75rem 1.5rem; border-radius: var(--radius-full); font-weight: 600; text-decoration: none; transition: all 0.2s; border: none; cursor: pointer; }
+        .btn-primary { background: var(--accent-primary); color: #fff; }
+        .btn-primary:hover { background: var(--accent-hover); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .btn-secondary { background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color); }
+        .btn-secondary:hover { border-color: var(--accent-primary); transform: translateY(-2px); }
+
+        /* Sections */
+        section { padding: 6rem 0; }
+        .section-title { font-size: 2rem; font-weight: 700; margin-bottom: 3rem; text-align: center; position: relative; }
+        
+        /* About */
+        .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start; }
+        .about-text p { margin-bottom: 1rem; color: var(--text-secondary); }
+        .skills-container { display: flex; flex-direction: column; gap: 1.5rem; }
+        .skill-group h4 { font-size: 1rem; color: var(--text-primary); margin-bottom: 0.75rem; }
+        .skill-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .skill-tag { padding: 0.35rem 0.75rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-full); font-size: 0.875rem; color: var(--text-secondary); }
+
+        /* Resume Timeline */
+        .timeline { position: relative; border-left: 2px solid var(--border-color); padding-left: 2rem; margin-left: 1rem; }
+        .timeline-item { position: relative; margin-bottom: 3rem; }
+        .timeline-item:last-child { margin-bottom: 0; }
+        .timeline-dot { position: absolute; left: -2.45rem; top: 0.25rem; width: 1rem; height: 1rem; border-radius: 50%; background: var(--bg-primary); border: 2px solid var(--accent-primary); }
+        .timeline-date { font-size: 0.875rem; color: var(--accent-primary); font-weight: 600; margin-bottom: 0.5rem; }
+        .timeline-title { font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.25rem; }
+        .timeline-subtitle { font-size: 1rem; color: var(--text-secondary); font-weight: 500; margin-bottom: 1rem; }
+        .timeline-content { color: var(--text-secondary); white-space: pre-line; }
+
+        /* Cards Grid */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem; }
+        .card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.5rem; transition: all 0.3s; display: flex; flex-direction: column; height: 100%; cursor: pointer; }
+        .card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--accent-primary); }
+        .card-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+        .card-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .card-desc { color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 1.5rem; flex-grow: 1; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .card-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .card-tag { font-size: 0.75rem; padding: 0.25rem 0.5rem; background: rgba(99, 102, 241, 0.1); color: var(--accent-primary); border-radius: var(--radius-md); font-weight: 500; }
+
+        /* Footer */
+        footer { padding: 3rem 0; text-align: center; border-top: 1px solid var(--border-color); margin-top: 4rem; }
+        .social-links { display: flex; justify-content: center; gap: 1.5rem; margin-bottom: 1.5rem; }
+        .social-links a { color: var(--text-secondary); text-decoration: none; font-weight: 500; transition: color 0.2s; }
+        .social-links a:hover { color: var(--accent-primary); }
+
+        /* Modal */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 2rem; opacity: 0; transition: opacity 0.3s; }
+        .modal-overlay.active { display: flex; opacity: 1; }
+        .modal { background: var(--bg-card); border-radius: var(--radius-lg); width: 100%; max-width: 700px; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-lg); transform: translateY(20px); transition: transform 0.3s; border: 1px solid var(--border-color); }
+        .modal-overlay.active .modal { transform: translateY(0); }
+        .modal-header { padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg-card); z-index: 10; }
+        .modal-title { font-size: 1.25rem; font-weight: 700; }
+        .modal-close { background: none; border: none; font-size: 1.5rem; color: var(--text-secondary); cursor: pointer; }
+        .modal-body { padding: 2rem; }
+        .modal-body img { max-width: 100%; border-radius: var(--radius-md); margin-bottom: 1.5rem; }
+
+        @media (max-width: 768px) {
+            .about-grid { grid-template-columns: 1fr; gap: 2rem; }
+            .nav-links { display: none; }
+            .hero h1 { font-size: 2.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-pattern"></div>
+    <div class="bg-glow"></div>
+
+    <nav>
+        <a href="#" class="logo" id="nav-logo">Portfolio</a>
+        <ul class="nav-links">
+            <li><a href="#about">关于我</a></li>
+            <li><a href="#resume">经历</a></li>
+            <li><a href="#games">项目</a></li>
+            <li><a href="/admin.html">管理</a></li>
+        </ul>
+        <button class="theme-toggle" onclick="toggleTheme()" aria-label="切换主题">
+            <svg id="theme-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+        </button>
+    </nav>
+
+    <main class="container">
+        <section class="hero" id="home">
+            <h1 id="hero-title">你好，我是 <span>李昶佑</span></h1>
+            <p id="hero-subtitle">游戏客户端实习生</p>
+            <div style="display: flex; gap: 1rem;">
+                <a href="#games" class="btn btn-primary">查看项目</a>
+                <a href="#resume" class="btn btn-secondary">我的经历</a>
+            </div>
+        </section>
+
+        <section id="about">
+            <h2 class="section-title">关于我</h2>
+            <div class="about-grid">
+                <div class="about-text" id="about-text"></div>
+                <div class="skills-container" id="skills-container"></div>
+            </div>
+        </section>
+
+        <section id="resume">
+            <h2 class="section-title">项目与经历</h2>
+            <div class="timeline" id="resume-timeline"></div>
+        </section>
+
+        <section id="games">
+            <h2 class="section-title">游戏作品集</h2>
+            <div class="grid" id="games-grid"></div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="social-links" id="footer-social"></div>
+            <p style="color: var(--text-tertiary); font-size: 0.875rem;">© <span id="year"></span> <span id="footer-name"></span>. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="game-modal" onclick="closeModal(event)">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-title"></h3>
+                <button class="modal-close" onclick="closeModal(event, true)">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-body"></div>
+        </div>
+    </div>
+
+    <script>
+        // Theme Toggle
+        function toggleTheme() {
+            const html = document.documentElement;
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+            localStorage.setItem('theme', isDark ? 'light' : 'dark');
+            updateThemeIcon(!isDark);
+        }
+
+        function updateThemeIcon(isDark) {
+            const icon = document.getElementById('theme-icon');
+            if (isDark) {
+                icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
+            } else {
+                icon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
+            }
+        }
+
+        // Init Theme
+        const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        updateThemeIcon(savedTheme === 'dark');
+
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // Load Data
+        let siteData = {};
+        async function loadData() {
+            try {
+                const res = await fetch('/data.json?_=' + Date.now());
+                if (res.ok) {
+                    siteData = await res.json();
+                    render();
+                }
+            } catch (e) {
+                console.error('Failed to load data:', e);
+            }
+        }
+
+        function render() {
+            const p = siteData.profile || {};
+            const r = siteData.resume || {};
+
+            // Hero
+            document.getElementById('nav-logo').textContent = p.name || 'Portfolio';
+            document.getElementById('hero-title').innerHTML = `你好，我是 <span>${p.name || ''}</span>`;
+            document.getElementById('hero-subtitle').textContent = p.subtitle || '';
+            document.getElementById('footer-name').textContent = p.name || '';
+
+            // About
+            document.getElementById('about-text').innerHTML = (p.about || []).map(text => `<p>${text}</p>`).join('');
+            
+            const skillsHtml = Object.entries(p.skills || {}).map(([cat, items]) => `
+                <div class="skill-group">
+                    <h4>${cat}</h4>
+                    <div class="skill-tags">
+                        ${items.map(item => `<span class="skill-tag">${item}</span>`).join('')}
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('skills-container').innerHTML = skillsHtml;
+
+            // Resume Timeline (Projects + Education)
+            const timelineItems = [];
+            if (r.education) {
+                r.education.forEach(edu => {
+                    timelineItems.push({
+                        date: edu.year,
+                        title: edu.school,
+                        subtitle: `${edu.degree} · ${edu.major}`,
+                        content: `相关课程：${edu.courses}`
+                    });
+                });
+            }
+            if (r.projects) {
+                r.projects.forEach(proj => {
+                    timelineItems.push({
+                        date: proj.time,
+                        title: proj.name,
+                        subtitle: proj.role,
+                        content: proj.description
+                    });
+                });
+            }
+
+            document.getElementById('resume-timeline').innerHTML = timelineItems.map(item => `
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-date">${item.date}</div>
+                    <div class="timeline-title">${item.title}</div>
+                    <div class="timeline-subtitle">${item.subtitle}</div>
+                    <div class="timeline-content">${item.content}</div>
+                </div>
+            `).join('');
+
+            // Games
+            const games = siteData.games || [];
+            document.getElementById('games-grid').innerHTML = games.map((game, i) => `
+                <div class="card" onclick="openGame(${i})">
+                    <div class="card-icon">${game.icon || '🎮'}</div>
+                    <h3 class="card-title">${game.title}</h3>
+                    <p class="card-desc">${game.description}</p>
+                    <div class="card-tags">
+                        ${(game.tech || []).map(t => `<span class="card-tag">${t}</span>`).join('')}
+                    </div>
+                </div>
+            `).join('');
+
+            // Footer Socials
+            document.getElementById('footer-social').innerHTML = (p.socialLinks || []).map(link => `
+                <a href="${link.url}" target="_blank">${link.name}</a>
+            `).join('');
+        }
+
+        // Modal Logic
+        function openGame(index) {
+            const game = siteData.games[index];
+            if (!game) return;
+            
+            document.getElementById('modal-title').textContent = game.title;
+            
+            let html = '';
+            if (game.image) {
+                html += `<img src="${game.image}" alt="${game.title}">`;
+            }
+            html += `<p style="color: var(--text-secondary); margin-bottom: 1.5rem; white-space: pre-line;">${game.description}</p>`;
+            if (game.tech && game.tech.length) {
+                html += `<div style="margin-bottom: 1.5rem;">
+                    <h4 style="margin-bottom: 0.5rem;">技术栈</h4>
+                    <div class="card-tags">
+                        ${game.tech.map(t => `<span class="card-tag">${t}</span>`).join('')}
+                    </div>
+                </div>`;
+            }
+            if (game.link) {
+                html += `<a href="${game.link}" target="_blank" class="btn btn-primary">查看详情</a>`;
+            }
+            
+            document.getElementById('modal-body').innerHTML = html;
+            document.getElementById('game-modal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(e, force = false) {
+            if (force || e.target.id === 'game-modal') {
+                document.getElementById('game-modal').classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') closeModal(null, true);
+        });
+
+        loadData();
+    </script>
+</body>
+</html>

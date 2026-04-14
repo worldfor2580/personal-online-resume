@@ -390,15 +390,20 @@
             // Videos
             const videos = siteData.videos || [];
             if (videos.length > 0) {
-                document.getElementById('videos-grid').innerHTML = videos.map((video, i) => `
-                    <div class="video-card" onclick="openVideo(${i})">
-                        <div class="video-placeholder">🎬</div>
-                        <div class="video-info">
-                            <h3 class="video-title">${video.title}</h3>
-                            <p class="video-desc">${video.description || ''}</p>
+                document.getElementById('videos-grid').innerHTML = videos.map((video, i) => {
+                    const bvid = video.bvid || (video.url || '').match(/BV[a-zA-Z0-9]+/)?.[0] || '';
+                    const embedUrl = bvid ? `https://player.bilibili.com/player.html?bvid=${bvid}&page=1` : '';
+                    if (!embedUrl) return '';
+                    return `
+                        <div class="video-card" style="cursor:default">
+                            <iframe src="${embedUrl}" allowfullscreen style="width:100%;aspect-ratio:16/9;border:none;border-radius:var(--radius-md) var(--radius-md) 0 0;"></iframe>
+                            <div class="video-info">
+                                <h3 class="video-title">${video.title}</h3>
+                                ${video.description ? `<p class="video-desc">${video.description}</p>` : ''}
+                            </div>
                         </div>
-                    </div>
-                `).join('');
+                    `;
+                }).join('');
             } else {
                 document.getElementById('videos-grid').innerHTML = '<p style="color: var(--text-tertiary); text-align: center; grid-column: 1/-1;">暂无视频</p>';
             }

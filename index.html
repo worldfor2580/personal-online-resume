@@ -294,6 +294,16 @@
         let siteData = {};
         async function loadData() {
             try {
+                // First check localStorage (admin edited data takes priority)
+                const cached = localStorage.getItem('portfolio_data');
+                if (cached) {
+                    try {
+                        siteData = JSON.parse(cached);
+                        render();
+                        return;
+                    } catch (e) {}
+                }
+                // Fall back to server data.json
                 const res = await fetch('/personal-online-resume/data.json?_=' + Date.now());
                 if (res.ok) {
                     siteData = await res.json();

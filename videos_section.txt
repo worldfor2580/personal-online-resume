@@ -1,0 +1,15 @@
+// Videos
+            const videos = siteData.videos || [];
+            if (videos.length > 0) {
+                document.getElementById('videos-grid').innerHTML = videos.map((video, i) => `
+                    <div class="video-card" onclick="openVideo(${i})">
+                        <div class="video-placeholder">🎬</div>
+                        <div class="video-info">
+                            <h3 class="video-title">${video.title}</h3>
+                            <p class="video-desc">${video.description || ''}</p>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                document.getElementById('videos-grid').innerHTML = '<p style="color: var(--text-tertiary); text-align: center; grid-column: 1/-1;">暂无视频</p>';
+       

@@ -794,7 +794,7 @@
                 try { data = JSON.parse(cached); return; } catch (e) {}
             }
             try {
-                const resp = await fetch('/data.json');
+                const resp = await fetch('/personal-online-resume/data.json');
                 if (resp.ok) data = await resp.json();
             } catch (e) {}
             

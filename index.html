@@ -266,7 +266,7 @@
         let siteData = {};
         async function loadData() {
             try {
-                const res = await fetch('/data.json?_=' + Date.now());
+                const res = await fetch('/personal-online-resume/data.json?_=' + Date.now());
                 if (res.ok) {
                     siteData = await res.json();
                     render();

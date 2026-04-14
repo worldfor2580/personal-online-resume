@@ -298,9 +298,13 @@
                 const cached = localStorage.getItem('portfolio_data');
                 if (cached) {
                     try {
-                        siteData = JSON.parse(cached);
-                        render();
-                        return;
+                        const parsed = JSON.parse(cached);
+                        // Only use localStorage if it has profile data (indicates valid save)
+                        if (parsed && parsed.profile) {
+                            siteData = parsed;
+                            render();
+                            return;
+                        }
                     } catch (e) {}
                 }
                 // Fall back to server data.json

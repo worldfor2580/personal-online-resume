@@ -152,6 +152,11 @@
         .social-links { display: flex; justify-content: center; gap: 1.5rem; margin-bottom: 1.5rem; }
         .social-links a { color: var(--text-secondary); text-decoration: none; font-weight: 500; transition: color 0.2s; }
         .social-links a:hover { color: var(--accent-primary); }
+        .social-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+        .social-item .social-name { color: var(--text-secondary); font-weight: 500; transition: color 0.2s; }
+        .social-item:hover .social-name { color: var(--accent-primary); }
+        .social-item .social-value { display: none; font-size: 0.85rem; color: var(--accent-primary); margin-top: 0.3rem; padding: 0.25rem 0.75rem; background: rgba(99,102,241,0.1); border-radius: var(--radius-full); user-select: all; }
+        .social-item .social-value.show { display: block; }
 
         /* Modal */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 2rem; opacity: 0; transition: opacity 0.3s; }
@@ -407,9 +412,22 @@
             }
 
             // Footer Socials
-            document.getElementById('footer-social').innerHTML = (p.socialLinks || []).map(link => `
-                <a href="${link.url}" target="_blank">${link.name}</a>
-            `).join('');
+            document.getElementById('footer-social').innerHTML = (p.socialLinks || []).map(link => {
+                const displayVal = link.url.replace(/^mailto:/, '').replace(/^tel:/, '');
+                return `<div class="social-item" onclick="toggleSocial(this)">
+                    <span class="social-name">${link.name}</span>
+                    <span class="social-value">${displayVal}</span>
+                </div>`;
+            }).join('');
+        }
+
+        function toggleSocial(el) {
+            const val = el.querySelector('.social-value');
+            // Close all other open social values
+            document.querySelectorAll('.social-value.show').forEach(v => {
+                if (v !== val) v.classList.remove('show');
+            });
+            val.classList.toggle('show');
         }
 
         // Modal Logic

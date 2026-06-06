@@ -118,15 +118,13 @@
         .skill-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
         .skill-tag { padding: 0.35rem 0.75rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-full); font-size: 0.875rem; color: var(--text-secondary); }
 
-        /* Resume Timeline */
-        .timeline { position: relative; border-left: 2px solid var(--border-color); padding-left: 2rem; margin-left: 1rem; }
-        .timeline-item { position: relative; margin-bottom: 3rem; }
-        .timeline-item:last-child { margin-bottom: 0; }
-        .timeline-dot { position: absolute; left: -2.45rem; top: 0.25rem; width: 1rem; height: 1rem; border-radius: 50%; background: var(--bg-primary); border: 2px solid var(--accent-primary); }
-        .timeline-date { font-size: 0.875rem; color: var(--accent-primary); font-weight: 600; margin-bottom: 0.5rem; }
-        .timeline-title { font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.25rem; }
-        .timeline-subtitle { font-size: 1rem; color: var(--text-secondary); font-weight: 500; margin-bottom: 1rem; }
-        .timeline-content { color: var(--text-secondary); white-space: pre-line; }
+        /* Job Target */
+        .job-target { margin-top: 1.5rem; padding: 1rem 1.25rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-md); }
+        .job-target-label { font-size: 0.85rem; color: var(--text-tertiary); margin-bottom: 0.4rem; }
+        .job-target-value { font-size: 1.05rem; font-weight: 600; color: var(--accent-primary); }
+        .job-target-value span { color: var(--text-primary); }
+        .job-target-meta { display: flex; gap: 1rem; margin-top: 0.4rem; flex-wrap: wrap; }
+        .job-target-meta-item { font-size: 0.9rem; color: var(--text-secondary); }
 
         /* Cards Grid */
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem; }
@@ -199,7 +197,6 @@
         <a href="#" class="logo" id="nav-logo">Portfolio</a>
         <ul class="nav-links">
             <li><a href="#about">关于我</a></li>
-            <li><a href="#resume">经历</a></li>
             <li><a href="#videos">视频</a></li>
             <li><a href="#games">项目</a></li>
             <li><a href="/personal-online-resume/admin.html">管理</a></li>
@@ -225,21 +222,18 @@
             <p id="hero-subtitle">游戏客户端实习生</p>
             <div style="display: flex; gap: 1rem;">
                 <a href="#games" class="btn btn-primary">查看项目</a>
-                <a href="#resume" class="btn btn-secondary">我的经历</a>
+                <a href="#about" class="btn btn-secondary">关于我</a>
             </div>
         </section>
 
         <section id="about">
             <h2 class="section-title">关于我</h2>
             <div class="about-grid">
-                <div class="about-text" id="about-text"></div>
+                <div class="about-text" id="about-text">
+                    <div id="job-target" class="job-target" style="display:none;"></div>
+                </div>
                 <div class="skills-container" id="skills-container"></div>
             </div>
-        </section>
-
-        <section id="resume">
-            <h2 class="section-title">项目与经历</h2>
-            <div class="timeline" id="resume-timeline"></div>
         </section>
 
         <section id="games">
@@ -348,7 +342,25 @@
 
             // About
             document.getElementById('about-text').innerHTML = (p.about || []).map(text => `<p>${text}</p>`).join('');
-            
+
+            // Job Target
+            const t = r.target || {};
+            const jobTargetEl = document.getElementById('job-target');
+            if (t.position || t.city || t.salary) {
+                jobTargetEl.innerHTML = `
+                    <div class="job-target-label">求职意向</div>
+                    <div class="job-target-value">${t.position || ''}</div>
+                    <div class="job-target-meta">
+                        ${t.city ? `<span class="job-target-meta-item">📍 ${t.city}</span>` : ''}
+                        ${t.salary ? `<span class="job-target-meta-item">💰 ${t.salary}</span>` : ''}
+                        ${t.type ? `<span class="job-target-meta-item">⏰ ${t.type}</span>` : ''}
+                    </div>
+                `;
+                jobTargetEl.style.display = 'block';
+            } else {
+                jobTargetEl.style.display = 'none';
+            }
+
             const skillsHtml = Object.entries(p.skills || {}).map(([cat, items]) => `
                 <div class="skill-group">
                     <h4>${cat}</h4>
@@ -358,39 +370,6 @@
                 </div>
             `).join('');
             document.getElementById('skills-container').innerHTML = skillsHtml;
-
-            // Resume Timeline (Projects + Education)
-            const timelineItems = [];
-            if (r.education) {
-                r.education.forEach(edu => {
-                    timelineItems.push({
-                        date: edu.year,
-                        title: edu.school,
-                        subtitle: `${edu.degree} · ${edu.major}`,
-                        content: `相关课程：${edu.courses}`
-                    });
-                });
-            }
-            if (r.projects) {
-                r.projects.forEach(proj => {
-                    timelineItems.push({
-                        date: proj.time,
-                        title: proj.name,
-                        subtitle: proj.role,
-                        content: proj.description
-                    });
-                });
-            }
-
-            document.getElementById('resume-timeline').innerHTML = timelineItems.map(item => `
-                <div class="timeline-item">
-                    <div class="timeline-dot"></div>
-                    <div class="timeline-date">${item.date}</div>
-                    <div class="timeline-title">${item.title}</div>
-                    <div class="timeline-subtitle">${item.subtitle}</div>
-                    <div class="timeline-content">${item.content}</div>
-                </div>
-            `).join('');
 
             // Games
             const games = siteData.games || [];

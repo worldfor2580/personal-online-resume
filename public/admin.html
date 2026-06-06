@@ -471,6 +471,9 @@
         .game-image-item .order-left { left: 3px; }
         .game-image-item .order-right { right: 3px; }
 
+        .video-drag-item.dragging, .game-drag-item.dragging { opacity: 0.4; }
+        .video-drag-item:hover, .game-drag-item:hover { border-color: var(--accent-blue) !important; box-shadow: var(--shadow-sm); }
+
         .modal-overlay {
             display: none;
             position: fixed;
@@ -1050,6 +1053,8 @@
             showToast('视频已删除');
         }
 
+        let dragSrcIdx = null;
+
         function renderVideosList() {
             const list = document.getElementById('videos-list');
             if (!list) return;
@@ -1059,15 +1064,56 @@
                 return;
             }
             list.innerHTML = videos.map((v, i) => `
-                <div style="display:flex;justify-content:space-between;align-items:center;padding:1rem;border-bottom:1px solid var(--border-color)">
-                    <div>
-                        <div style="font-weight:600">${v.title}</div>
-                        <div style="font-size:0.8rem;color:var(--text-tertiary);margin-top:0.25rem;">${v.bvid || v.url}</div>
-                        ${v.description ? `<div style="font-size:0.85rem;color:var(--text-secondary);margin-top:0.25rem;">${v.description}</div>` : ''}
+                <div draggable="true" ondragstart="dragStart(${i})" ondragover="dragOver(event)" ondrop="dropVideo(${i})" ondragend="dragEnd()"
+                     class="video-drag-item ${i === dragSrcIdx ? 'dragging' : ''}"
+                     style="display:flex;justify-content:space-between;align-items:center;padding:0.75rem 1rem;border:1px solid var(--border-color);border-radius:var(--radius-md);margin-bottom:0.5rem;background:var(--bg-card);cursor:grab;transition:all 0.2s;">
+                    <div style="display:flex;align-items:center;gap:0.75rem;flex:1;min-width:0;">
+                        <span style="color:var(--text-tertiary);font-size:0.9rem;cursor:grab;">⠿</span>
+                        <div style="min-width:0;">
+                            <div style="font-weight:600;font-size:0.9rem;">${v.title}</div>
+                            <div style="font-size:0.8rem;color:var(--text-tertiary);">${v.bvid || v.url}</div>
+                        </div>
                     </div>
-                    <button onclick="deleteVideo(${i})" style="background:#ef4444;color:#fff;border:none;padding:0.4rem 0.75rem;border-radius:6px;cursor:pointer;font-size:0.85rem">删除</button>
+                    <div style="display:flex;align-items:center;gap:0.4rem;flex-shrink:0;">
+                        ${i > 0 ? `<button onclick="moveVideo(${i}, -1)" style="background:none;border:1px solid var(--border-color);border-radius:6px;padding:0.2rem 0.5rem;cursor:pointer;font-size:0.8rem;color:var(--text-secondary);" title="上移">▲</button>` : ''}
+                        ${i < videos.length - 1 ? `<button onclick="moveVideo(${i}, 1)" style="background:none;border:1px solid var(--border-color);border-radius:6px;padding:0.2rem 0.5rem;cursor:pointer;font-size:0.8rem;color:var(--text-secondary);" title="下移">▼</button>` : ''}
+                        <button onclick="deleteVideo(${i})" style="background:#ef4444;color:#fff;border:none;padding:0.35rem 0.65rem;border-radius:6px;cursor:pointer;font-size:0.8rem;">删除</button>
+                    </div>
                 </div>
             `).join('');
+        }
+
+        function dragStart(idx) {
+            dragSrcIdx = idx;
+            setTimeout(() => document.querySelector('.video-drag-item.dragging')?.classList.add('dragging'), 0);
+        }
+        function dragOver(e) {
+            e.preventDefault();
+            document.querySelectorAll('.video-drag-item').forEach(el => el.style.borderColor = '');
+            if (e.currentTarget) e.currentTarget.style.borderColor = 'var(--accent-blue)';
+        }
+        function dragEnd() {
+            document.querySelectorAll('.video-drag-item').forEach(el => { el.style.borderColor = ''; el.classList.remove('dragging'); });
+            dragSrcIdx = null;
+        }
+        function dropVideo(targetIdx) {
+            if (dragSrcIdx === null || dragSrcIdx === targetIdx) return;
+            const videos = data.videos || [];
+            const [moved] = videos.splice(dragSrcIdx, 1);
+            videos.splice(targetIdx, 0, moved);
+            dragSrcIdx = null;
+            saveToLocalStorage();
+            renderVideosList();
+            showToast('视频顺序已更新');
+        }
+
+        function moveVideo(idx, dir) {
+            const target = idx + dir;
+            const videos = data.videos || [];
+            if (target < 0 || target >= videos.length) return;
+            [videos[idx], videos[target]] = [videos[target], videos[idx]];
+            saveToLocalStorage();
+            renderVideosList();
         }
 
         function renderGames() {
@@ -1075,18 +1121,46 @@
             const games = data.games || [];
             if (!games.length) { container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🎮</div>暂无游戏作品</div>'; return; }
             container.innerHTML = games.map((g, i) => `
-                <div class="data-item">
-                    <div class="data-item-content">
-                        <div class="data-item-title">${g.icon || '🎮'} ${g.title}</div>
-                        <div class="data-item-desc">${g.description || ''}</div>
-                        <div class="data-item-meta">${(g.tech || []).map(t => `<span class="meta-tag">${t}</span>`).join('')}</div>
+                <div draggable="true" ondragstart="gameDragStart(${i})" ondragover="dragOver(event)" ondrop="dropGame(${i})" ondragend="dragEnd()"
+                     class="game-drag-item"
+                     style="display:flex;justify-content:space-between;align-items:center;padding:0.75rem 1rem;border:1px solid var(--border-color);border-radius:var(--radius-md);margin-bottom:0.5rem;background:var(--bg-card);cursor:grab;transition:all 0.2s;">
+                    <div style="display:flex;align-items:center;gap:0.75rem;flex:1;min-width:0;">
+                        <span style="color:var(--text-tertiary);font-size:0.9rem;cursor:grab;">⠿</span>
+                        <div style="min-width:0;">
+                            <div style="font-weight:600;font-size:0.9rem;">${g.icon || '🎮'} ${g.title}</div>
+                            <div style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.15rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:300px;">${(g.description || '').slice(0, 60)}</div>
+                            <div class="data-item-meta" style="margin-top:0.3rem;">${(g.tech || []).map(t => `<span class="meta-tag">${t}</span>`).join('')}</div>
+                        </div>
                     </div>
-                    <div class="data-item-actions">
-                        <button class="btn btn-secondary btn-small" onclick="editGame(${i})">编辑</button>
-                        <button class="btn btn-danger btn-small" onclick="deleteGame(${i})">删除</button>
+                    <div style="display:flex;align-items:center;gap:0.4rem;flex-shrink:0;">
+                        ${i > 0 ? `<button onclick="moveGame(${i}, -1)" style="background:none;border:1px solid var(--border-color);border-radius:6px;padding:0.2rem 0.5rem;cursor:pointer;font-size:0.8rem;color:var(--text-secondary);" title="上移">▲</button>` : ''}
+                        ${i < games.length - 1 ? `<button onclick="moveGame(${i}, 1)" style="background:none;border:1px solid var(--border-color);border-radius:6px;padding:0.2rem 0.5rem;cursor:pointer;font-size:0.8rem;color:var(--text-secondary);" title="下移">▼</button>` : ''}
+                        <button class="btn btn-secondary btn-small" onclick="editGame(${i})" style="padding:0.25rem 0.55rem;font-size:0.8rem;">编辑</button>
+                        <button class="btn btn-danger btn-small" onclick="deleteGame(${i})" style="padding:0.25rem 0.55rem;font-size:0.8rem;">删除</button>
                     </div>
                 </div>
             `).join('');
+        }
+
+        let gameDragSrcIdx = null;
+        function gameDragStart(idx) { gameDragSrcIdx = idx; }
+        function dropGame(targetIdx) {
+            if (gameDragSrcIdx === null || gameDragSrcIdx === targetIdx) return;
+            const games = data.games || [];
+            const [moved] = games.splice(gameDragSrcIdx, 1);
+            games.splice(targetIdx, 0, moved);
+            gameDragSrcIdx = null;
+            saveToLocalStorage();
+            renderGames();
+            showToast('游戏顺序已更新');
+        }
+        function moveGame(idx, dir) {
+            const target = idx + dir;
+            const games = data.games || [];
+            if (target < 0 || target >= games.length) return;
+            [games[idx], games[target]] = [games[target], games[idx]];
+            saveToLocalStorage();
+            renderGames();
         }
 
         // Temporary images array for the open modal

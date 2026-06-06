@@ -164,9 +164,27 @@
         .modal-title { font-size: 1.25rem; font-weight: 700; }
         .modal-close { background: none; border: none; font-size: 1.5rem; color: var(--text-secondary); cursor: pointer; }
         .modal-body { padding: 2rem; }
-        .modal-body img { max-width: 100%; border-radius: var(--radius-md); margin-bottom: 1.5rem; }
+
+        /* Carousel */
+        .carousel { position: relative; width: 100%; height: 360px; margin-bottom: 1.5rem; overflow: hidden; border-radius: var(--radius-md); }
+        .carousel-inner { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+        .carousel-slide { position: absolute; border-radius: var(--radius-md); overflow: hidden; transition: all 0.5s ease; object-fit: cover; }
+        .carousel-slide.active { z-index: 3; width: 85%; height: 100%; left: 7.5%; top: 0; opacity: 1; transform: scale(1); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+        .carousel-slide.prev { z-index: 2; width: 30%; height: 65%; left: 0; top: 17.5%; opacity: 0.45; transform: scale(0.85); cursor: pointer; }
+        .carousel-slide.next { z-index: 2; width: 30%; height: 65%; right: 0; top: 17.5%; opacity: 0.45; transform: scale(0.85); cursor: pointer; }
+        .carousel-slide img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .carousel-btn { position: absolute; top: 50%; transform: translateY(-50%); z-index: 10; width: 40px; height: 40px; border-radius: 50%; background: rgba(0,0,0,0.5); color: #fff; border: none; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+        .carousel-btn:hover { background: rgba(0,0,0,0.8); }
+        .carousel-btn-left { left: 8px; }
+        .carousel-btn-right { right: 8px; }
+        .carousel-dots { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); z-index: 10; display: flex; gap: 6px; }
+        .carousel-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.5); border: none; cursor: pointer; transition: background 0.2s; padding: 0; }
+        .carousel-dot.active { background: #fff; width: 20px; border-radius: 4px; }
 
         @media (max-width: 768px) {
+            .carousel { height: 240px; }
+            .carousel-slide.prev, .carousel-slide.next { display: none; }
+            .carousel-slide.active { width: 100%; left: 0; }
             .about-grid { grid-template-columns: 1fr; gap: 2rem; }
             .nav-links { display: none; }
             .hero h1 { font-size: 2.5rem; }
@@ -440,16 +458,35 @@
             }
         }
 
+        // Carousel state
+        let carouselImages = [];
+        let carouselIndex = 0;
+        let carouselTimer = null;
+
         function openGame(index) {
             const game = siteData.games[index];
             if (!game) return;
-            
+
             document.getElementById('modal-title').textContent = game.title;
-            
+
+            // Collect images from game.images or fallback to game.image
+            carouselImages = (game.images && game.images.length) ? game.images : (game.image ? [game.image] : []);
+            carouselIndex = 0;
+
             let html = '';
-            if (game.image) {
-                html += `<img src="${game.image}" alt="${game.title}">`;
+
+            // Carousel
+            if (carouselImages.length > 1) {
+                html += `<div class="carousel" id="game-carousel">
+                    <div class="carousel-inner" id="carousel-inner"></div>
+                    <button class="carousel-btn carousel-btn-left" onclick="carouselPrev(event)">‹</button>
+                    <button class="carousel-btn carousel-btn-right" onclick="carouselNext(event)">›</button>
+                    <div class="carousel-dots" id="carousel-dots"></div>
+                </div>`;
+            } else if (carouselImages.length === 1) {
+                html += `<img src="${carouselImages[0]}" alt="${game.title}" style="max-width:100%;border-radius:var(--radius-md);margin-bottom:1.5rem;">`;
             }
+
             html += `<p style="color: var(--text-secondary); margin-bottom: 1.5rem; white-space: pre-line;">${game.description}</p>`;
             if (game.tech && game.tech.length) {
                 html += `<div style="margin-bottom: 1.5rem;">
@@ -462,14 +499,86 @@
             if (game.link) {
                 html += `<a href="${game.link}" target="_blank" class="btn btn-primary">查看详情</a>`;
             }
-            
+
             document.getElementById('modal-body').innerHTML = html;
+
+            // Initialize carousel if multi-image
+            if (carouselImages.length > 1) {
+                renderCarousel();
+                startCarouselAuto();
+            }
+
             document.getElementById('game-modal').classList.add('active');
             document.body.style.overflow = 'hidden';
         }
 
+        function renderCarousel() {
+            const container = document.getElementById('carousel-inner');
+            const dotsContainer = document.getElementById('carousel-dots');
+            const len = carouselImages.length;
+            if (!container || len === 0) return;
+
+            const prevIdx = (carouselIndex - 1 + len) % len;
+            const nextIdx = (carouselIndex + 1) % len;
+
+            container.innerHTML = `
+                <div class="carousel-slide prev" onclick="carouselPrev(event)">
+                    <img src="${carouselImages[prevIdx]}" alt="prev">
+                </div>
+                <div class="carousel-slide active">
+                    <img src="${carouselImages[carouselIndex]}" alt="active">
+                </div>
+                <div class="carousel-slide next" onclick="carouselNext(event)">
+                    <img src="${carouselImages[nextIdx]}" alt="next">
+                </div>
+            `;
+
+            dotsContainer.innerHTML = carouselImages.map((_, i) =>
+                `<button class="carousel-dot ${i === carouselIndex ? 'active' : ''}" onclick="carouselGoTo(${i})"></button>`
+            ).join('');
+        }
+
+        function carouselGoTo(idx) {
+            stopCarouselAuto();
+            carouselIndex = ((idx % carouselImages.length) + carouselImages.length) % carouselImages.length;
+            renderCarousel();
+            startCarouselAuto();
+        }
+
+        function carouselNext(e) {
+            if (e) e.stopPropagation();
+            stopCarouselAuto();
+            carouselIndex = (carouselIndex + 1) % carouselImages.length;
+            renderCarousel();
+            startCarouselAuto();
+        }
+
+        function carouselPrev(e) {
+            if (e) e.stopPropagation();
+            stopCarouselAuto();
+            carouselIndex = (carouselIndex - 1 + carouselImages.length) % carouselImages.length;
+            renderCarousel();
+            startCarouselAuto();
+        }
+
+        function startCarouselAuto() {
+            stopCarouselAuto();
+            carouselTimer = setInterval(() => {
+                carouselIndex = (carouselIndex + 1) % carouselImages.length;
+                renderCarousel();
+            }, 10000);
+        }
+
+        function stopCarouselAuto() {
+            if (carouselTimer) {
+                clearInterval(carouselTimer);
+                carouselTimer = null;
+            }
+        }
+
         function closeModal(e, force = false) {
             if (force || e.target.id === 'game-modal') {
+                stopCarouselAuto();
                 document.getElementById('game-modal').classList.remove('active');
                 document.body.style.overflow = '';
             }

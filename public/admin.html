@@ -439,6 +439,38 @@
         .meta-date { color: var(--accent-pink); font-size: 0.85rem; }
         .data-item-actions { display: flex; gap: 0.5rem; margin-left: 1rem; }
 
+        .game-images-list {
+            display: flex; flex-wrap: wrap; gap: 0.75rem;
+        }
+        .game-image-item {
+            position: relative; width: 120px; height: 90px;
+            border-radius: var(--radius-md); overflow: hidden;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+        }
+        .game-image-item img {
+            width: 100%; height: 100%; object-fit: cover;
+        }
+        .game-image-item .remove-btn {
+            position: absolute; top: 3px; right: 3px;
+            width: 22px; height: 22px; border-radius: 50%;
+            background: rgba(234,67,53,0.85); color: #fff;
+            border: none; font-size: 14px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.2s;
+        }
+        .game-image-item:hover .remove-btn { opacity: 1; }
+        .game-image-item .order-btn {
+            position: absolute; bottom: 3px; width: 22px; height: 22px;
+            border-radius: 50%; background: rgba(0,0,0,0.5); color: #fff;
+            border: none; font-size: 12px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.2s;
+        }
+        .game-image-item:hover .order-btn { opacity: 1; }
+        .game-image-item .order-left { left: 3px; }
+        .game-image-item .order-right { right: 3px; }
+
         .modal-overlay {
             display: none;
             position: fixed;
@@ -763,17 +795,15 @@
                 <input type="hidden" id="game-id">
                 <div class="form-group"><label class="form-label">作品名称</label><input type="text" class="form-input" id="game-title" placeholder="例如：星际探险家"></div>
                 <div class="form-group"><label class="form-label">图标 Emoji</label><input type="text" class="form-input" id="game-icon" placeholder="例如: 🎮"></div>
-                <div class="form-group full-width"><label class="form-label">封面图片</label>
-                    <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;">
+                <div class="form-group full-width"><label class="form-label">封面图片（可添加多张）</label>
+                    <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;margin-bottom:0.5rem;">
                         <input type="file" id="game-image-file" accept="image/*" style="display:none" onchange="handleImageUpload(event)">
-                        <button class="btn btn-secondary btn-small" onclick="document.getElementById('game-image-file').click()">选择本地图片</button>
-                        <span style="font-size:0.8rem;color:var(--text-tertiary)">或输入图片URL</span>
-                        <input type="text" class="form-input" id="game-image" placeholder="输入图片链接" style="flex:1;min-width:200px">
+                        <button class="btn btn-secondary btn-small" onclick="document.getElementById('game-image-file').click()">+ 添加本地图片</button>
+                        <span style="font-size:0.8rem;color:var(--text-tertiary)">或输入图片URL后点添加</span>
+                        <input type="text" class="form-input" id="game-image-url" placeholder="输入图片链接" style="flex:1;min-width:200px">
+                        <button class="btn btn-primary btn-small" onclick="addImageUrl()">添加</button>
                     </div>
-                    <div id="game-image-preview" style="margin-top:0.5rem;display:none;">
-                        <img src="" alt="预览" style="max-width:200px;max-height:120px;border-radius:8px;border:1px solid var(--border-color);">
-                        <button class="btn btn-danger btn-small" onclick="removeGameImage()" style="padding:0.15rem 0.5rem;font-size:0.75rem;margin-left:0.5rem;">移除图片</button>
-                    </div>
+                    <div id="game-images-list" class="game-images-list"></div>
                 </div>
                 <div class="form-group full-width"><label class="form-label">游戏简介</label><textarea class="form-textarea" id="game-desc" rows="3" placeholder="详细介绍游戏"></textarea></div>
                 <div class="form-group full-width"><label class="form-label">技术标签（回车添加）</label><div class="tag-input-container" id="game-tech-container"><input type="text" class="tag-input" id="game-tech-input" placeholder="输入标签后按回车"></div></div>
@@ -1059,37 +1089,52 @@
             `).join('');
         }
 
+        // Temporary images array for the open modal
+        let tempGameImages = [];
+
         function openGameModal(index = null) {
             document.getElementById('game-modal').classList.add('active');
-            // Reset image preview
-            document.getElementById('game-image-preview').style.display = 'none';
             document.getElementById('game-image-file').value = '';
+            document.getElementById('game-image-url').value = '';
+            tempGameImages = [];
             if (index !== null) {
                 const g = data.games[index];
                 document.getElementById('game-modal-title').textContent = '编辑游戏作品';
                 document.getElementById('game-id').value = index;
                 document.getElementById('game-title').value = g.title || '';
                 document.getElementById('game-icon').value = g.icon || '';
-                document.getElementById('game-image').value = g.image || '';
                 document.getElementById('game-desc').value = g.description || '';
                 document.getElementById('game-link').value = g.link || '';
                 renderTechTags(g.tech || []);
-                // Show existing image preview
-                if (g.image) {
-                    const preview = document.getElementById('game-image-preview');
-                    preview.querySelector('img').src = g.image;
-                    preview.style.display = 'block';
-                }
+                // Load existing images
+                tempGameImages = (g.images && g.images.length ? g.images : (g.image ? [g.image] : [])).slice();
+                renderGameImages();
             } else {
                 document.getElementById('game-modal-title').textContent = '添加游戏作品';
                 document.getElementById('game-id').value = '';
                 document.getElementById('game-title').value = '';
                 document.getElementById('game-icon').value = '🎮';
-                document.getElementById('game-image').value = '';
                 document.getElementById('game-desc').value = '';
                 document.getElementById('game-link').value = '';
                 renderTechTags([]);
+                renderGameImages();
             }
+        }
+
+        function renderGameImages() {
+            const container = document.getElementById('game-images-list');
+            if (!tempGameImages.length) {
+                container.innerHTML = '<span style="color:var(--text-tertiary);font-size:0.85rem;">暂无图片，点击上方添加</span>';
+                return;
+            }
+            container.innerHTML = tempGameImages.map((img, i) => `
+                <div class="game-image-item">
+                    <img src="${img}" alt="图片${i+1}">
+                    <button class="remove-btn" onclick="removeGameImage(${i})" title="删除">✕</button>
+                    ${i > 0 ? `<button class="order-btn order-left" onclick="moveImage(${i}, -1)" title="左移">◀</button>` : ''}
+                    ${i < tempGameImages.length - 1 ? `<button class="order-btn order-right" onclick="moveImage(${i}, 1)" title="右移">▶</button>` : ''}
+                </div>
+            `).join('');
         }
 
         function handleImageUpload(event) {
@@ -1101,30 +1146,44 @@
             }
             const reader = new FileReader();
             reader.onload = function(e) {
-                const dataUrl = e.target.result;
-                document.getElementById('game-image').value = dataUrl;
-                const preview = document.getElementById('game-image-preview');
-                preview.querySelector('img').src = dataUrl;
-                preview.style.display = 'block';
+                tempGameImages.push(e.target.result);
+                renderGameImages();
+                document.getElementById('game-image-file').value = '';
             };
             reader.readAsDataURL(file);
         }
 
-        function removeGameImage() {
-            document.getElementById('game-image').value = '';
-            document.getElementById('game-image-file').value = '';
-            document.getElementById('game-image-preview').style.display = 'none';
+        function addImageUrl() {
+            const url = document.getElementById('game-image-url').value.trim();
+            if (!url) { showToast('请输入图片链接'); return; }
+            tempGameImages.push(url);
+            renderGameImages();
+            document.getElementById('game-image-url').value = '';
+        }
+
+        function removeGameImage(idx) {
+            tempGameImages.splice(idx, 1);
+            renderGameImages();
+        }
+
+        function moveImage(idx, dir) {
+            const target = idx + dir;
+            if (target < 0 || target >= tempGameImages.length) return;
+            [tempGameImages[idx], tempGameImages[target]] = [tempGameImages[target], tempGameImages[idx]];
+            renderGameImages();
         }
 
         function closeGameModal() { document.getElementById('game-modal').classList.remove('active'); }
 
         function saveGame() {
             const id = document.getElementById('game-id').value;
+            const images = tempGameImages.slice();
             const gameData = {
                 id: id ? parseInt(id) : Date.now(),
                 title: document.getElementById('game-title').value,
                 icon: document.getElementById('game-icon').value,
-                image: document.getElementById('game-image').value,
+                image: images.length > 0 ? images[0] : '',
+                images: images,
                 description: document.getElementById('game-desc').value,
                 tech: getCurrentTechTags(),
                 link: document.getElementById('game-link').value

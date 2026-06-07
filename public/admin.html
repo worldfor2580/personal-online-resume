@@ -1381,7 +1381,23 @@
         });
 
         function exportData() {
-            const json = JSON.stringify(data, null, 2);
+            // 创建干净的副本，去掉 Base64 图片数据
+            const clean = JSON.parse(JSON.stringify(data));
+            if (clean.games) {
+                clean.games = clean.games.map(g => {
+                    const copy = { ...g };
+                    // 去掉 Base64 图片（只保留外部 URL 链接）
+                    if (copy.images) {
+                        copy.images = copy.images.filter(img => !img.startsWith('data:'));
+                        if (copy.images.length === 0) delete copy.images;
+                    }
+                    if (copy.image && copy.image.startsWith('data:')) {
+                        copy.image = '';
+                    }
+                    return copy;
+                });
+            }
+            const json = JSON.stringify(clean, null, 2);
             const blob = new Blob([json], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');

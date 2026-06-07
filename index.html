@@ -52,14 +52,40 @@
             overflow-x: hidden;
         }
 
-        /* Background Pattern */
+        /* Background Pattern - Geometric shattered glass */
         .bg-pattern {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background-image: radial-gradient(var(--border-color) 1px, transparent 1px);
-            background-size: 32px 32px;
-            opacity: 0.5;
             z-index: -2;
+            pointer-events: none;
+            overflow: hidden;
+            /* Diamond grid - shattered glass fragments */
+            background-image:
+                repeating-linear-gradient(45deg, transparent, transparent 38px, var(--border-color) 38px, var(--border-color) 39px),
+                repeating-linear-gradient(-45deg, transparent, transparent 38px, var(--border-color) 38px, var(--border-color) 39px);
+            background-size: 54px 54px;
+            opacity: 0.35;
+        }
+        .bg-pattern::before {
+            content: '';
+            position: absolute;
+            top: 5%;
+            left: -5%;
+            width: 45%;
+            height: 55%;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.07), transparent 60%);
+            clip-path: polygon(0 15%, 100% 0, 80% 100%, 0 85%);
+            pointer-events: none;
+        }
+        .bg-pattern::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: -5%;
+            width: 50%;
+            height: 50%;
+            background: linear-gradient(225deg, rgba(161, 66, 244, 0.06), transparent 60%);
+            clip-path: polygon(20% 0, 100% 10%, 100% 90%, 0 100%);
             pointer-events: none;
         }
         .bg-glow {

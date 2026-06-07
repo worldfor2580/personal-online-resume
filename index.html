@@ -52,41 +52,45 @@
             overflow-x: hidden;
         }
 
-        /* Background Pattern - Geometric shattered glass */
+        /* Background Pattern - 3D geometric design */
         .bg-pattern {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
             z-index: -2;
             pointer-events: none;
             overflow: hidden;
-            /* Diamond grid - shattered glass fragments */
-            background-image:
-                repeating-linear-gradient(45deg, transparent, transparent 38px, var(--border-color) 38px, var(--border-color) 39px),
-                repeating-linear-gradient(-45deg, transparent, transparent 38px, var(--border-color) 38px, var(--border-color) 39px);
-            background-size: 54px 54px;
-            opacity: 0.35;
+            /* Uneven color blocks - no repeating patterns */
+            background:
+                radial-gradient(ellipse at 8% 15%, rgba(99, 102, 241, 0.07) 0%, transparent 45%),
+                radial-gradient(ellipse at 92% 75%, rgba(161, 66, 244, 0.06) 0%, transparent 45%),
+                radial-gradient(ellipse at 45% 55%, rgba(66, 133, 244, 0.04) 0%, transparent 35%),
+                radial-gradient(circle at 75% 15%, rgba(244, 81, 171, 0.03) 0%, transparent 25%),
+                radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.03) 0%, transparent 22%),
+                radial-gradient(circle at 55% 30%, rgba(161, 66, 244, 0.02) 0%, transparent 18%);
         }
         .bg-pattern::before {
             content: '';
             position: absolute;
-            top: 5%;
-            left: -5%;
-            width: 45%;
-            height: 55%;
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.07), transparent 60%);
-            clip-path: polygon(0 15%, 100% 0, 80% 100%, 0 85%);
+            top: 6%;
+            right: 8%;
+            width: 420px;
+            height: 380px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.10), rgba(161, 66, 244, 0.04) 40%, transparent 65%);
+            clip-path: polygon(20% 5%, 70% 8%, 92% 30%, 85% 65%, 50% 92%, 12% 70%, 5% 35%);
             pointer-events: none;
+            transform: rotate(-6deg);
         }
         .bg-pattern::after {
             content: '';
             position: absolute;
-            bottom: 0;
-            right: -5%;
-            width: 50%;
-            height: 50%;
-            background: linear-gradient(225deg, rgba(161, 66, 244, 0.06), transparent 60%);
-            clip-path: polygon(20% 0, 100% 10%, 100% 90%, 0 100%);
+            bottom: 4%;
+            left: 2%;
+            width: 360px;
+            height: 310px;
+            background: linear-gradient(220deg, rgba(66, 133, 244, 0.08), rgba(244, 81, 171, 0.03) 35%, transparent 60%);
+            clip-path: polygon(8% 18%, 35% 0, 75% 12%, 88% 45%, 68% 80%, 25% 88%, 3% 60%);
             pointer-events: none;
+            transform: rotate(4deg);
         }
         .bg-glow {
             position: fixed;
